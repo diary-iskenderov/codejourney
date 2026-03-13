@@ -1,7 +1,7 @@
 document.documentElement.classList.add('js-ready');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCGAssPC67mYZoKTHgopTDPRqR3WwnIp4M',
+  apiKey: 'AIzaSyD4DdwZcmUfDBiYwBiu5ZorU5pUBP8a2WE',
   authDomain: 'iskenderov-pro.firebaseapp.com',
   projectId: 'iskenderov-pro',
   storageBucket: 'iskenderov-pro.firebasestorage.app',
@@ -733,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  if (googleLoginBtn instanceof HTMLAnchorElement) {
+  if (googleLoginBtn instanceof HTMLElement) {
     googleLoginBtn.addEventListener('click', async (event) => {
       event.preventDefault();
       setGoogleButtonBusy(true);
