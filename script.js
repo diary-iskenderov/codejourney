@@ -774,10 +774,22 @@ document.addEventListener('DOMContentLoaded', () => {
           setAuthStatus('Браузер заблокировал popup. Разрешите всплывающее окно и повторите.', 'error');
         } else if (code === 'auth/unauthorized-domain') {
           setAuthStatus('Этот домен не добавлен в Firebase Auth. Нужен Authorized domain.', 'error');
+        } else if (code === 'auth/operation-not-allowed') {
+          setAuthStatus('Google вход выключен в Firebase Authentication -> Sign-in method.', 'error');
+        } else if (code === 'auth/invalid-api-key') {
+          setAuthStatus('Неверный или заблокированный API key для веба.', 'error');
         } else if (code === 'auth/operation-not-supported-in-this-environment') {
           setAuthStatus('Откройте сайт через http://localhost или https, а не через file://.', 'error');
         } else {
-          setAuthStatus('Не удалось войти через Google. Проверьте настройки Firebase Auth.', 'error');
+          const message =
+            error && typeof error === 'object' && 'message' in error ? String(error.message) : '';
+          const details = code ? ` (${code})` : '';
+          setAuthStatus(
+            message
+              ? `Не удалось войти через Google${details}. ${message}`
+              : `Не удалось войти через Google${details}. Проверьте настройки Firebase Auth.`,
+            'error'
+          );
         }
 
         console.error('Google sign-in failed:', error);
