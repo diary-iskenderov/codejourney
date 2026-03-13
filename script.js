@@ -35,6 +35,7 @@ const getFirebaseContext = async () => {
         serverTimestamp: firestoreModule.serverTimestamp,
         setDoc: firestoreModule.setDoc,
         signInWithPopup: authModule.signInWithPopup,
+        signOut: authModule.signOut,
       };
     });
   }
@@ -88,6 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalCloseButtons = Array.from(document.querySelectorAll('[data-modal-close]'));
   const authStatus = document.querySelector('[data-auth-status]');
   const googleLoginBtn = document.querySelector('.google-login-btn');
+  const authUserCard = document.querySelector('[data-auth-user]');
+  const authName = document.querySelector('[data-auth-name]');
+  const authEmail = document.querySelector('[data-auth-email]');
+  const authPlan = document.querySelector('[data-auth-plan]');
+  const authAvatar = document.querySelector('[data-auth-avatar]');
+  const authAvatarFallback = document.querySelector('[data-auth-avatar-fallback]');
+  const authSignoutBtn = document.querySelector('[data-auth-signout]');
+  const authTitle = document.getElementById('profile-modal-title');
+  const authCopy = document.querySelector('.auth-modal__copy');
   let activeModal = null;
   let activeModalTrigger = null;
   let authObserverInitialized = false;
@@ -114,6 +124,81 @@ document.addEventListener('DOMContentLoaded', () => {
     googleLoginBtn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
   };
 
+  const resetAuthView = () => {
+    if (authUserCard instanceof HTMLElement) {
+      authUserCard.hidden = true;
+    }
+    if (googleLoginBtn instanceof HTMLElement) {
+      googleLoginBtn.hidden = false;
+    }
+    if (authSignoutBtn instanceof HTMLElement) {
+      authSignoutBtn.hidden = true;
+    }
+    if (authTitle instanceof HTMLElement) {
+      authTitle.textContent = 'Вход в аккаунт';
+    }
+    if (authCopy instanceof HTMLElement) {
+      authCopy.textContent =
+        'Войдите через Google, чтобы сохранять прогресс и возвращаться к обучению с любого устройства.';
+    }
+    if (authAvatar instanceof HTMLImageElement) {
+      authAvatar.hidden = true;
+      authAvatar.removeAttribute('src');
+    }
+    if (authAvatarFallback instanceof HTMLElement) {
+      authAvatarFallback.hidden = false;
+      authAvatarFallback.textContent = 'U';
+    }
+  };
+
+  const renderSignedInUser = (profile) => {
+    if (authUserCard instanceof HTMLElement) {
+      authUserCard.hidden = false;
+    }
+    if (googleLoginBtn instanceof HTMLElement) {
+      googleLoginBtn.hidden = true;
+    }
+    if (authSignoutBtn instanceof HTMLElement) {
+      authSignoutBtn.hidden = false;
+    }
+    if (authTitle instanceof HTMLElement) {
+      authTitle.textContent = 'Ваш профиль';
+    }
+    if (authCopy instanceof HTMLElement) {
+      authCopy.textContent = 'Аккаунт подключён. Здесь будет отображаться ваш общий профиль для сайта и приложения.';
+    }
+    if (authName instanceof HTMLElement) {
+      authName.textContent = profile.name || 'CodeJourney User';
+    }
+    if (authEmail instanceof HTMLElement) {
+      authEmail.textContent = profile.email || 'Без email';
+    }
+    if (authPlan instanceof HTMLElement) {
+      authPlan.textContent = String(profile.plan || 'free').toUpperCase();
+    }
+
+    const avatarText = (profile.name || profile.email || 'U').trim().charAt(0).toUpperCase() || 'U';
+    if (authAvatarFallback instanceof HTMLElement) {
+      authAvatarFallback.textContent = avatarText;
+    }
+
+    if (authAvatar instanceof HTMLImageElement) {
+      if (profile.photoUrl) {
+        authAvatar.src = profile.photoUrl;
+        authAvatar.hidden = false;
+        if (authAvatarFallback instanceof HTMLElement) {
+          authAvatarFallback.hidden = true;
+        }
+      } else {
+        authAvatar.hidden = true;
+        authAvatar.removeAttribute('src');
+        if (authAvatarFallback instanceof HTMLElement) {
+          authAvatarFallback.hidden = false;
+        }
+      }
+    }
+  };
+
   const syncUserProfile = async (context, user) => {
     const userRef = context.doc(context.db, 'users', user.uid);
     const existingUser = await context.getDoc(userRef);
@@ -132,10 +217,21 @@ document.addEventListener('DOMContentLoaded', () => {
         role: 'user',
         createdAt: context.serverTimestamp(),
       });
-      return;
+      return {
+        ...profilePayload,
+        plan: 'free',
+        role: 'user',
+      };
     }
 
     await context.setDoc(userRef, profilePayload, { merge: true });
+    const existingData = existingUser.data();
+    return {
+      ...existingData,
+      ...profilePayload,
+      plan: existingData.plan || 'free',
+      role: existingData.role || 'user',
+    };
   };
 
   const ensureFirebaseAuth = async ({ showLoadError = false } = {}) => {
@@ -145,16 +241,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!authObserverInitialized) {
         context.onAuthStateChanged(context.auth, async (user) => {
           if (!user) {
+            resetAuthView();
             setAuthStatus('');
             return;
           }
 
           try {
-            await syncUserProfile(context, user);
+            const profile = await syncUserProfile(context, user);
+            renderSignedInUser(profile);
             const identity = user.displayName || user.email || 'Google аккаунт';
             setAuthStatus(`Вы вошли как ${identity}.`, 'success');
           } catch (error) {
             console.error('User profile sync failed:', error);
+            resetAuthView();
             setAuthStatus('Вход выполнен, но профиль не сохранился в Firestore.', 'error');
           }
         });
@@ -230,6 +329,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  if (authSignoutBtn instanceof HTMLButtonElement) {
+    authSignoutBtn.addEventListener('click', async () => {
+      const firebaseContext = await ensureFirebaseAuth({ showLoadError: true });
+      if (!firebaseContext) return;
+
+      try {
+        await firebaseContext.signOut(firebaseContext.auth);
+        resetAuthView();
+        setAuthStatus('Вы вышли из аккаунта.', 'info');
+      } catch (error) {
+        console.error('Sign-out failed:', error);
+        setAuthStatus('Не удалось выйти из аккаунта.', 'error');
+      }
+    });
+  }
+
+  resetAuthView();
+
   if (googleLoginBtn instanceof HTMLAnchorElement) {
     googleLoginBtn.addEventListener('click', async (event) => {
       event.preventDefault();
@@ -244,7 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         await firebaseContext.signInWithPopup(firebaseContext.auth, firebaseContext.provider);
-        closeModal();
       } catch (error) {
         const code =
           error && typeof error === 'object' && 'code' in error ? String(error.code) : '';

@@ -129,16 +129,17 @@ Get job-ready skills</code></pre>
       <section id="start" class="container section reveal">
         <div class="section-head">
           <p class="eyebrow">Первый шаг</p>
-          <h2>Открывающий курс: старт в IT за 45 минут</h2>
+          <h2>Стартовый модуль: подготовка перед первым курсом</h2>
         </div>
 
         <div class="starter-grid">
           <article class="starter-card">
-            <p class="course-level">Starter / Orientation</p>
-            <h3>Курс 0 — Вход в разработку</h3>
+            <p class="course-level">Orientation / Start</p>
+            <h3>Подготовка к обучению в CodeJourney</h3>
             <p>
-              Этот блок вводит в систему обучения CodeJourney: как выбрать трек,
-              как учиться по модулям и как собрать первое портфолио.
+              Это не основной курс по программированию, а короткий вводный модуль.
+              Он помогает выбрать направление, подготовить инструменты и начать обучение
+              по понятному плану без хаоса.
             </p>
             <div class="meta-row">
               <span>6 шагов</span>
@@ -155,8 +156,11 @@ Get job-ready skills</code></pre>
           </article>
 
           <aside class="checklist-card" aria-label="Чеклист старта">
-            <h3>Твой чеклист запуска</h3>
-            <p>Отмечай шаги. Прогресс сохраняется в браузере.</p>
+            <h3>Подготовка перед стартом</h3>
+            <p>
+              Отмечай только те шаги, которые уже сделал. Этот чеклист нужен,
+              чтобы понять, готов ли ты переходить к первому курсу.
+            </p>
             <label class="check-item">
               <input class="learning-check" type="checkbox" data-key="goal" />
               <span>Определил цель: работа, фриланс или pet-проекты</span>
@@ -173,7 +177,10 @@ Get job-ready skills</code></pre>
               <input class="learning-check" type="checkbox" data-key="project" />
               <span>Начал первый мини-проект</span>
             </label>
-            <p class="progress-copy"><strong id="checklist-count">0</strong> / 4 шага завершено</p>
+            <p class="progress-copy">
+              <strong id="checklist-count">0</strong> / 4 шага завершено. Когда закроешь основные
+              пункты, переходи к выбору курса ниже.
+            </p>
           </aside>
         </div>
       </section>
@@ -470,6 +477,17 @@ Get job-ready skills</code></pre>
           Войдите через Google, чтобы сохранять прогресс и возвращаться к обучению с любого устройства.
         </p>
         <p class="auth-modal__status" data-auth-status hidden></p>
+        <article class="auth-user-card" data-auth-user hidden>
+          <div class="auth-user-card__avatar" data-auth-avatar-wrap>
+            <img class="auth-user-card__avatar-image" data-auth-avatar alt="Аватар пользователя" hidden />
+            <span class="auth-user-card__avatar-fallback" data-auth-avatar-fallback>U</span>
+          </div>
+          <div class="auth-user-card__meta">
+            <strong data-auth-name>CodeJourney User</strong>
+            <span data-auth-email>user@example.com</span>
+            <span class="auth-user-card__plan" data-auth-plan>FREE</span>
+          </div>
+        </article>
         <a
           class="google-login-btn"
           href="https://accounts.google.com/"
@@ -498,6 +516,10 @@ Get job-ready skills</code></pre>
           </span>
           <span>Вход через Google</span>
         </a>
+        <button class="auth-signout-btn" type="button" data-auth-signout hidden>
+          <span class="material-symbols-rounded">logout</span>
+          <span>Выйти</span>
+        </button>
       </div>
     </div>
 
