@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const authCopy = document.querySelector('.auth-modal__copy');
   const headerProfileBtn = document.querySelector('[data-header-profile-btn]');
   const headerProfileLabel = document.querySelector('[data-header-profile-label]');
+  const profileCacheKey = 'codejourney.profile.cache.v1';
   let activeModal = null;
   let activeModalTrigger = null;
   let authObserverInitialized = false;
@@ -158,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const getDisplayName = (profile = {}) => {
     const fromName = String(profile.name || '').trim();
     if (fromName) {
-      return fromName.split(/\s+/)[0];
+      return fromName;
     }
     const fromEmail = String(profile.email || '').trim();
     if (fromEmail && fromEmail.includes('@')) {
@@ -185,13 +186,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const buildProfileFromAuthUser = (user) => ({
-    name: user.displayName || user.email?.split('@')[0] || 'CodeJourney User',
-    email: user.email || '',
-    photoUrl: user.photoURL || '',
-    plan: 'free',
-    role: 'user',
-  });
+  const normalizeProfile = (profile = {}) => {
+    const normalized = {
+      name: String(profile.name || '').trim(),
+      email: String(profile.email || '').trim(),
+      photoUrl: String(profile.photoUrl || '').trim(),
+      plan: String(profile.plan || 'free').trim() || 'free',
+      role: String(profile.role || 'user').trim() || 'user',
+    };
+    return normalized;
+  };
+
+  const readCachedProfile = () => {
+    try {
+      const raw = window.localStorage.getItem(profileCacheKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      return normalizeProfile(parsed);
+    } catch (error) {
+      console.warn('Failed to read cached profile:', error);
+      return null;
+    }
+  };
+
+  const writeCachedProfile = (profile = {}) => {
+    try {
+      const normalized = normalizeProfile(profile);
+      if (!normalized.name && !normalized.email) return;
+      window.localStorage.setItem(profileCacheKey, JSON.stringify(normalized));
+    } catch (error) {
+      console.warn('Failed to write cached profile:', error);
+    }
+  };
+
+  const clearCachedProfile = () => {
+    try {
+      window.localStorage.removeItem(profileCacheKey);
+    } catch (error) {
+      console.warn('Failed to clear cached profile:', error);
+    }
+  };
+
+  const buildProfileFromAuthUser = (user) =>
+    normalizeProfile({
+      name: user.displayName || user.email?.split('@')[0] || 'CodeJourney User',
+      email: user.email || '',
+      photoUrl: user.photoURL || '',
+      plan: 'free',
+      role: 'user',
+    });
 
   const resetAuthView = () => {
     setElementHidden(authUserCard, true);
@@ -216,10 +260,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const renderSignedInUser = (profile) => {
+    const normalizedProfile = normalizeProfile(profile);
     setElementHidden(authUserCard, false);
     setElementHidden(googleLoginBtn, true);
     setElementHidden(authSignoutBtn, false);
-    renderHeaderProfileState(profile);
+    renderHeaderProfileState(normalizedProfile);
+    writeCachedProfile(normalizedProfile);
     if (authTitle instanceof HTMLElement) {
       authTitle.textContent = 'Ваш профиль';
     }
@@ -227,23 +273,24 @@ document.addEventListener('DOMContentLoaded', () => {
       authCopy.textContent = 'Аккаунт подключён. Здесь будет отображаться ваш общий профиль для сайта и приложения.';
     }
     if (authName instanceof HTMLElement) {
-      authName.textContent = profile.name || 'CodeJourney User';
+      authName.textContent = normalizedProfile.name || 'CodeJourney User';
     }
     if (authEmail instanceof HTMLElement) {
-      authEmail.textContent = profile.email || 'Без email';
+      authEmail.textContent = normalizedProfile.email || 'Без email';
     }
     if (authPlan instanceof HTMLElement) {
-      authPlan.textContent = String(profile.plan || 'free').toUpperCase();
+      authPlan.textContent = String(normalizedProfile.plan || 'free').toUpperCase();
     }
 
-    const avatarText = (profile.name || profile.email || 'U').trim().charAt(0).toUpperCase() || 'U';
+    const avatarText =
+      (normalizedProfile.name || normalizedProfile.email || 'U').trim().charAt(0).toUpperCase() || 'U';
     if (authAvatarFallback instanceof HTMLElement) {
       authAvatarFallback.textContent = avatarText;
     }
 
     if (authAvatar instanceof HTMLImageElement) {
-      if (profile.photoUrl) {
-        authAvatar.src = profile.photoUrl;
+      if (normalizedProfile.photoUrl) {
+        authAvatar.src = normalizedProfile.photoUrl;
         authAvatar.hidden = false;
         if (authAvatarFallback instanceof HTMLElement) {
           authAvatarFallback.hidden = true;
@@ -300,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!authObserverInitialized) {
         context.onAuthStateChanged(context.auth, async (user) => {
           if (!user) {
+            clearCachedProfile();
             resetAuthView();
             setAuthStatus('');
             return;
@@ -396,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         await firebaseContext.signOut(firebaseContext.auth);
+        clearCachedProfile();
         resetAuthView();
         setAuthStatus('Вы вышли из аккаунта.', 'info');
       } catch (error) {
@@ -406,6 +455,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   resetAuthView();
+  const cachedProfile = readCachedProfile();
+  if (cachedProfile) {
+    renderHeaderProfileState(cachedProfile);
+  }
   ensureFirebaseAuth({ showLoadError: false });
 
   if (googleLoginBtn instanceof HTMLAnchorElement) {
