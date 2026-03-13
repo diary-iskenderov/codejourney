@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeJourney Academy | IT-образование</title>
+    <meta
+      name="description"
+      content="CodeJourney Academy — образовательный IT-сайт с курсами Python, HTML & CSS, JavaScript и Flutter."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a
+          class="header-owner-btn"
+          href="https://www.instagram.com/diary_iskenderov/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram Diary_iskenderov"
+        >
+          Diary_iskenderov
+        </a>
+        <a class="brand" href="#top" aria-label="CodeJourney Academy">
+          <span class="brand-mark">
+            <span class="material-symbols-rounded">code</span>
+          </span>
+          <span class="brand-copy">
+            <strong>Code Journey</strong>
+            <small>Learning App UI</small>
+          </span>
+        </a>
+        <a
+          class="header-profile-btn"
+          href="#profile-modal"
+          data-modal-target="profile-modal"
+          aria-label="Профиль"
+          aria-haspopup="dialog"
+          aria-controls="profile-modal"
+        >
+          <span class="material-symbols-rounded">person</span>
+          <span>ПРОФИЛЬ</span>
+        </a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero container reveal">
+        <div class="hero-copy">
+          <p class="eyebrow">Образовательная IT-платформа</p>
+          <h1>Учись программированию системно, а не по случайным роликам</h1>
+          <p class="lead">
+            Это веб-версия вашей программы CodeJourney: те же направления и логика роста,
+            но в формате современного сайта с удобной навигацией и структурой обучения.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-accent" href="#start">Открывающий курс</a>
+            <a class="btn btn-light" href="#courses">Выбрать трек</a>
+            <a class="btn btn-light" href="#format">Как проходит обучение</a>
+          </div>
+        </div>
+
+        <div class="hero-panel" aria-hidden="true">
+          <div class="panel-top">student@codejourney:~</div>
+          <pre><code>$ tracks --list
+1. Python
+2. HTML & CSS
+3. JavaScript
+4. Flutter
+
+$ progress --goal
+Build projects
+Pass quizzes
+Get job-ready skills</code></pre>
+        </div>
+      </section>
+
+      <section class="stats container reveal" aria-label="Статистика платформы">
+        <article>
+          <h2>4</h2>
+          <p>Ключевых IT-направления</p>
+        </article>
+        <article>
+          <h2>48+</h2>
+          <p>Учебных модулей</p>
+        </article>
+        <article>
+          <h2>Теория + Практика</h2>
+          <p>Каждый блок с прикладной частью</p>
+        </article>
+        <article>
+          <h2>RU / EN</h2>
+          <p>Поддержка двух языков</p>
+        </article>
+      </section>
+
+      <section class="container quick-actions reveal" aria-label="Быстрые действия">
+        <a class="action-tile" href="#start">
+          <span class="material-symbols-rounded">rocket_launch</span>
+          <span>Быстрый старт</span>
+        </a>
+        <a class="action-tile" href="#courses">
+          <span class="material-symbols-rounded">menu_book</span>
+          <span>Каталог курсов</span>
+        </a>
+        <a class="action-tile" href="#roadmap">
+          <span class="material-symbols-rounded">trending_up</span>
+          <span>Roadmap роста</span>
+        </a>
+      </section>
+
+      <section id="start" class="container section reveal">
+        <div class="section-head">
+          <p class="eyebrow">Первый шаг</p>
+          <h2>Открывающий курс: старт в IT за 45 минут</h2>
+        </div>
+
+        <div class="starter-grid">
+          <article class="starter-card">
+            <p class="course-level">Starter / Orientation</p>
+            <h3>Курс 0 — Вход в разработку</h3>
+            <p>
+              Этот блок вводит в систему обучения CodeJourney: как выбрать трек,
+              как учиться по модулям и как собрать первое портфолио.
+            </p>
+            <div class="meta-row">
+              <span>6 шагов</span>
+              <button class="inline-link" data-toggle="starter-modules">Скрыть программу</button>
+            </div>
+            <ol id="starter-modules" class="modules-list">
+              <li>Как выбрать направление: Web, Backend или Mobile</li>
+              <li>Инструменты: IDE, Git, терминал, браузер DevTools</li>
+              <li>План на 30 дней: темп и контроль прогресса</li>
+              <li>Как проходить теорию и тесты без выгорания</li>
+              <li>Первый мини-проект и публикация на GitHub</li>
+              <li>Подготовка к основному курсу (Python/JS/Flutter)</li>
+            </ol>
+          </article>
+
+          <aside class="checklist-card" aria-label="Чеклист старта">
+            <h3>Твой чеклист запуска</h3>
+            <p>Отмечай шаги. Прогресс сохраняется в браузере.</p>
+            <label class="check-item">
+              <input class="learning-check" type="checkbox" data-key="goal" />
+              <span>Определил цель: работа, фриланс или pet-проекты</span>
+            </label>
+            <label class="check-item">
+              <input class="learning-check" type="checkbox" data-key="tools" />
+              <span>Установил нужные инструменты для обучения</span>
+            </label>
+            <label class="check-item">
+              <input class="learning-check" type="checkbox" data-key="track" />
+              <span>Выбрал основной трек и запланировал 5 часов в неделю</span>
+            </label>
+            <label class="check-item">
+              <input class="learning-check" type="checkbox" data-key="project" />
+              <span>Начал первый мини-проект</span>
+            </label>
+            <p class="progress-copy"><strong id="checklist-count">0</strong> / 4 шага завершено</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="courses" class="container section reveal">
+        <div class="section-head">
+          <p class="eyebrow">Каталог</p>
+          <h2>Курсы, как в приложении, но в веб-формате</h2>
+        </div>
+
+        <div class="courses-layout">
+          <aside class="courses-sidebar">
+            <div class="courses-list" role="tablist" aria-label="Список курсов">
+              <button class="course-nav-btn" data-course-target="python" aria-selected="false">
+                <strong>Python</strong>
+                <small>11 модулей • Backend</small>
+              </button>
+              <button class="course-nav-btn" data-course-target="htmlcss" aria-selected="false">
+                <strong>HTML &amp; CSS</strong>
+                <small>10 модулей • Web</small>
+              </button>
+              <button class="course-nav-btn" data-course-target="javascript" aria-selected="false">
+                <strong>JavaScript</strong>
+                <small>15 модулей • Web</small>
+              </button>
+              <button class="course-nav-btn" data-course-target="flutter" aria-selected="false">
+                <strong>Flutter</strong>
+                <small>12 модулей • Mobile</small>
+              </button>
+            </div>
+          </aside>
+
+          <div class="course-detail-board">
+            <article class="course-placeholder" data-course-placeholder>
+              <div class="hello-grid hello-rotator" aria-label="Примеры кода">
+                <article class="hello-item is-active" data-hello-item>
+                  <h4>Python</h4>
+                  <pre><code>print("Привет, мир!")</code></pre>
+                </article>
+                <article class="hello-item" data-hello-item>
+                  <h4>JavaScript</h4>
+                  <pre><code>console.log("Привет, мир!");</code></pre>
+                </article>
+                <article class="hello-item" data-hello-item>
+                  <h4>HTML</h4>
+                  <pre><code>&lt;h1&gt;Привет, мир!&lt;/h1&gt;</code></pre>
+                </article>
+                <article class="hello-item flutter-item" data-hello-item>
+                  <h4>Dart / Flutter</h4>
+                  <div class="flutter-split-view">
+                    <pre class="flutter-code-frame"><code>Text('Привет, мир!')</code></pre>
+                    <div class="flutter-output" aria-label="Результат кода">
+                      <div class="flutter-output-screen">Привет, мир!</div>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </article>
+
+            <article class="course-detail" data-course-panel="python" hidden>
+              <p class="course-level">Beginner / Backend</p>
+              <h3>Python</h3>
+              <p>
+                Ваша дорожка из 11 блоков: основы, условия, циклы, функции, файлы, ООП,
+                обработка ошибок и мини-проекты.
+              </p>
+              <div class="meta-row">
+                <span>11 модулей</span>
+              </div>
+              <ol class="modules-list">
+                <li>Основы, переменные, ввод/вывод</li>
+                <li>Условия и логика</li>
+                <li>Циклы for/while</li>
+                <li>Строки и методы</li>
+                <li>Списки и операции</li>
+                <li>Словари</li>
+                <li>Функции</li>
+                <li>Работа с файлами</li>
+                <li>ООП</li>
+                <li>Обработка ошибок</li>
+                <li>Мини-проекты</li>
+              </ol>
+            </article>
+
+            <article class="course-detail" data-course-panel="htmlcss" hidden>
+              <p class="course-level">Beginner / Web</p>
+              <h3>HTML &amp; CSS</h3>
+              <p>
+                10 модулей по вёрстке: от базовой структуры документа до форм,
+                таблиц, селекторов и работы с цветом.
+              </p>
+              <div class="meta-row">
+                <span>10 модулей</span>
+              </div>
+              <ol class="modules-list">
+                <li>Основы HTML</li>
+                <li>Работа с текстом</li>
+                <li>Списки</li>
+                <li>Ссылки и навигация</li>
+                <li>Изображения</li>
+                <li>Таблицы</li>
+                <li>Формы</li>
+                <li>Дополнительная разметка</li>
+                <li>Введение в CSS</li>
+                <li>Цвет и читабельность</li>
+              </ol>
+            </article>
+
+            <article class="course-detail" data-course-panel="javascript" hidden>
+              <p class="course-level">Intermediate / Web</p>
+              <h3>JavaScript</h3>
+              <p>
+                15 блоков: синтаксис, DOM, события, асинхронность, архитектура,
+                хранение данных и финальный проект.
+              </p>
+              <div class="meta-row">
+                <span>15 модулей</span>
+              </div>
+              <ol class="modules-list">
+                <li>Введение и запуск</li>
+                <li>Типы данных и операторы</li>
+                <li>Массивы и объекты</li>
+                <li>Условия</li>
+                <li>Циклы</li>
+                <li>Функции</li>
+                <li>DOM</li>
+                <li>События и формы</li>
+                <li>Асинхронность</li>
+                <li>Мини-проекты</li>
+                <li>Валидация форм</li>
+                <li>localStorage</li>
+                <li>Чистый код</li>
+                <li>Модули и архитектура</li>
+                <li>Итоговый проект</li>
+              </ol>
+            </article>
+
+            <article class="course-detail" data-course-panel="flutter" hidden>
+              <p class="course-level">Intermediate / Mobile</p>
+              <h3>Flutter</h3>
+              <p>
+                12 модулей: база Dart, виджеты, состояние, навигация, работа с API,
+                Firebase, тестирование и релиз.
+              </p>
+              <div class="meta-row">
+                <span>12 модулей</span>
+              </div>
+              <ol class="modules-list">
+                <li>Старт проекта Flutter</li>
+                <li>Dart для Flutter</li>
+                <li>Виджеты и вёрстка</li>
+                <li>State management базово</li>
+                <li>Формы и UX ввода</li>
+                <li>Навигация</li>
+                <li>Асинхронность</li>
+                <li>JSON и сеть</li>
+                <li>Локальное хранение</li>
+                <li>Firebase</li>
+                <li>Тестирование</li>
+                <li>Подготовка к релизу</li>
+              </ol>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="format" class="container section split reveal">
+        <div>
+          <p class="eyebrow">Формат обучения</p>
+          <h2>Маршрут, который доводит до навыка</h2>
+          <p class="lead small">
+            Логика платформы повторяет вашу программу: модульное движение,
+            контроль знаний и акцент на прикладные задачи, а не на теорию ради теории.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article>
+            <span>01</span>
+            <h3>Изучаешь базу</h3>
+            <p>Короткие теоретические блоки, только нужное для практики.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Пишешь код</h3>
+            <p>После каждого блока закрепляешь материал в упражнениях.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Проходишь тесты</h3>
+            <p>Понимаешь, где пробелы, и возвращаешься к слабым местам.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="roadmap" class="container section reveal">
+        <div class="section-head">
+          <p class="eyebrow">Roadmap</p>
+          <h2>Как вырасти от новичка до уверенного разработчика</h2>
+        </div>
+
+        <div class="timeline">
+          <article>
+            <h3>Месяц 1</h3>
+            <p>Python или HTML &amp; CSS: базовая логика и синтаксис.</p>
+          </article>
+          <article>
+            <h3>Месяц 2</h3>
+            <p>JavaScript: интерактив, работа с DOM и событиями.</p>
+          </article>
+          <article>
+            <h3>Месяц 3</h3>
+            <p>Проектная практика: хранение данных, архитектура, чистый код.</p>
+          </article>
+          <article>
+            <h3>Месяц 4</h3>
+            <p>Flutter + публикация портфолио-проекта.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="faq" class="container section reveal">
+        <div class="section-head">
+          <p class="eyebrow">FAQ</p>
+          <h2>Частые вопросы</h2>
+        </div>
+
+        <div class="faq-list">
+          <article class="faq-item">
+            <button class="faq-q" aria-expanded="false">Подходит ли сайт новичкам без опыта?</button>
+            <p class="faq-a" hidden>Да. Для старта подходят треки Python и HTML &amp; CSS.</p>
+          </article>
+
+          <article class="faq-item">
+            <button class="faq-q" aria-expanded="false">Это отдельный проект или часть приложения?</button>
+            <p class="faq-a" hidden>
+              Это отдельный сайт внутри вашего проекта. Контент и структура взяты из текущей программы.
+            </p>
+          </article>
+
+          <article class="faq-item">
+            <button class="faq-q" aria-expanded="false">Можно ли расширить новыми треками?</button>
+            <p class="faq-a" hidden>
+              Да. В эту структуру легко добавить новые карточки курсов, модули и секции.
+            </p>
+          </article>
+
+          <article class="faq-item">
+            <button class="faq-q" aria-expanded="false">Прогресс чеклиста где хранится?</button>
+            <p class="faq-a" hidden>
+              Пока без сервера: в localStorage браузера. При желании можно перенести в Firebase.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-wrap">
+        <p>© <span id="year"></span> CodeJourney Academy</p>
+        <p>IT-образование: Python, Web, JavaScript, Flutter</p>
+      </div>
+    </footer>
+
+    <nav class="bottom-nav" aria-label="Навигация приложения">
+      <a href="#top" class="active">
+        <span class="material-symbols-rounded">home</span>
+        <span>Главная</span>
+      </a>
+      <a href="#courses">
+        <span class="material-symbols-rounded">school</span>
+        <span>Курсы</span>
+      </a>
+      <a href="#faq">
+        <span class="material-symbols-rounded">help</span>
+        <span>FAQ</span>
+      </a>
+    </nav>
+
+    <div class="auth-modal" id="profile-modal" hidden>
+      <button class="auth-modal__backdrop" type="button" data-modal-close aria-label="Закрыть окно"></button>
+      <div
+        class="auth-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-modal-title"
+      >
+        <button class="auth-modal__close" type="button" data-modal-close aria-label="Закрыть">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+        <p class="eyebrow">Профиль</p>
+        <h2 id="profile-modal-title">Вход в аккаунт</h2>
+        <p class="auth-modal__copy">
+          Войдите через Google, чтобы сохранять прогресс и возвращаться к обучению с любого устройства.
+        </p>
+        <p class="auth-modal__status" data-auth-status hidden></p>
+        <a
+          class="google-login-btn"
+          href="https://accounts.google.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="google-login-btn__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path
+                fill="#EA4335"
+                d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.6 6.8 2.6 12s4.2 9.5 9.4 9.5c5.4 0 9-3.8 9-9.1 0-.6-.1-1.1-.2-1.5H12z"
+              />
+              <path
+                fill="#34A853"
+                d="M3.7 7.6l3.2 2.4C7.8 8.2 9.7 6.8 12 6.8c1.8 0 3.1.8 3.8 1.4l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5c-3.6 0-6.8 2-8.3 5.1z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M12 21.5c2.5 0 4.7-.8 6.3-2.3l-3-2.4c-.8.6-1.9 1-3.3 1-3.8 0-5.1-2.6-5.4-3.9l-3.1 2.4c1.5 3.2 4.7 5.2 8.5 5.2z"
+              />
+              <path
+                fill="#4285F4"
+                d="M21 12.4c0-.6-.1-1.1-.2-1.5H12v3.9h5.4c-.3 1.2-1 2.1-2.1 2.9l3 2.4c1.8-1.7 2.7-4.1 2.7-7.7z"
+              />
+            </svg>
+          </span>
+          <span>Вход через Google</span>
+        </a>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
