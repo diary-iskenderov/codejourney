@@ -35,13 +35,19 @@ const getFirebaseContext = async () => {
         auth,
         db,
         provider,
+        collection: firestoreModule.collection,
         doc: firestoreModule.doc,
         getDoc: firestoreModule.getDoc,
+        getDocs: firestoreModule.getDocs,
+        limit: firestoreModule.limit,
         onAuthStateChanged: authModule.onAuthStateChanged,
+        orderBy: firestoreModule.orderBy,
+        query: firestoreModule.query,
         serverTimestamp: firestoreModule.serverTimestamp,
         setDoc: firestoreModule.setDoc,
         signInWithPopup: authModule.signInWithPopup,
         signOut: authModule.signOut,
+        where: firestoreModule.where,
       };
     });
   }
@@ -124,9 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const headerProfileBtn = document.querySelector('[data-header-profile-btn]');
   const headerProfileLabel = document.querySelector('[data-header-profile-label]');
   const profileCacheKey = 'codejourney.profile.cache.v1';
+  const leaderboardList = document.querySelector('[data-leaderboard-list]');
+  const leaderboardMeta = document.querySelector('[data-leaderboard-meta]');
+  const friendsList = document.querySelector('[data-friends-list]');
+  const friendsMeta = document.querySelector('[data-friends-meta]');
+  const requestsMeta = document.querySelector('[data-requests-meta]');
+  const communityRefreshBtn = document.querySelector('[data-community-refresh]');
+  const communityJumpButtons = Array.from(document.querySelectorAll('[data-community-jump]'));
   let activeModal = null;
   let activeModalTrigger = null;
   let authObserverInitialized = false;
+  let communityLoadRequestId = 0;
 
   const setAuthStatus = (message = '', state = 'info') => {
     if (!(authStatus instanceof HTMLElement)) return;
@@ -236,6 +250,211 @@ document.addEventListener('DOMContentLoaded', () => {
       plan: 'free',
       role: 'user',
     });
+
+  const toInt = (value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) return Math.floor(value);
+    return 0;
+  };
+
+  const createListItem = (text, className = '') => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    if (className) {
+      li.className = className;
+    }
+    return li;
+  };
+
+  const replaceListItems = (listNode, items = []) => {
+    if (!(listNode instanceof HTMLElement)) return;
+    listNode.innerHTML = '';
+    items.forEach((item) => listNode.appendChild(item));
+  };
+
+  const setCommunityRefreshBusy = (isBusy) => {
+    if (!(communityRefreshBtn instanceof HTMLButtonElement)) return;
+    communityRefreshBtn.disabled = isBusy;
+    communityRefreshBtn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+  };
+
+  const renderCommunitySignedOut = () => {
+    if (leaderboardMeta instanceof HTMLElement) {
+      leaderboardMeta.textContent = 'Войдите через Google, чтобы увидеть общий рейтинг.';
+    }
+    if (friendsMeta instanceof HTMLElement) {
+      friendsMeta.textContent = 'После входа здесь отобразится список друзей из приложения.';
+    }
+    if (requestsMeta instanceof HTMLElement) {
+      requestsMeta.textContent = 'Заявок: 0';
+    }
+    replaceListItems(leaderboardList, [createListItem('Рейтинг доступен после входа.', 'community-empty')]);
+    replaceListItems(friendsList, [createListItem('Список друзей появится после входа.', 'community-empty')]);
+    setCommunityRefreshBusy(false);
+  };
+
+  const renderLeaderboardRows = (rows = [], currentUid = '') => {
+    if (!(leaderboardMeta instanceof HTMLElement)) return;
+
+    if (!rows.length) {
+      leaderboardMeta.textContent = 'Пока нет пользователей в рейтинге.';
+      replaceListItems(leaderboardList, [createListItem('Добавьте первый профиль через Google вход.', 'community-empty')]);
+      return;
+    }
+
+    leaderboardMeta.textContent = `Показано ${rows.length} пользователей по полю totalXp.`;
+    const items = rows.map((row, index) => {
+      const rank = index + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+      const name = String(row.name || 'Пользователь');
+      const xp = toInt(row.totalXp);
+      const country = row.countryCode ? ` · ${String(row.countryCode).toUpperCase()}` : '';
+      const mine = row.uid === currentUid ? ' · Вы' : '';
+      const li = document.createElement('li');
+      li.innerHTML = `${medal} <span class="community-name"></span> <span class="community-xp"></span>`;
+      const nameNode = li.querySelector('.community-name');
+      const xpNode = li.querySelector('.community-xp');
+      if (nameNode) nameNode.textContent = `${name}${country}${mine}`;
+      if (xpNode) xpNode.textContent = `${xp} XP`;
+      return li;
+    });
+    replaceListItems(leaderboardList, items);
+  };
+
+  const renderFriendsRows = (rows = [], pendingRequests = 0) => {
+    if (requestsMeta instanceof HTMLElement) {
+      requestsMeta.textContent = `Заявок: ${pendingRequests}`;
+    }
+    if (!(friendsMeta instanceof HTMLElement)) return;
+
+    if (!rows.length) {
+      friendsMeta.textContent = 'Пока нет друзей. Добавляйте через friendId в приложении.';
+      replaceListItems(friendsList, [createListItem('Список друзей пуст.', 'community-empty')]);
+      return;
+    }
+
+    friendsMeta.textContent = `Друзей: ${rows.length}`;
+    const items = rows.map((row) => {
+      const name = String(row.name || 'Пользователь');
+      const xp = toInt(row.totalXp);
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="community-name"></span> <span class="community-xp"></span>`;
+      const nameNode = li.querySelector('.community-name');
+      const xpNode = li.querySelector('.community-xp');
+      if (nameNode) nameNode.textContent = name;
+      if (xpNode) xpNode.textContent = `${xp} XP`;
+      return li;
+    });
+    replaceListItems(friendsList, items);
+  };
+
+  const loadCommunityData = async (context, user) => {
+    const requestId = ++communityLoadRequestId;
+
+    if (!context || !user) {
+      renderCommunitySignedOut();
+      return;
+    }
+
+    if (leaderboardMeta instanceof HTMLElement) {
+      leaderboardMeta.textContent = 'Загружаем рейтинг...';
+    }
+    if (friendsMeta instanceof HTMLElement) {
+      friendsMeta.textContent = 'Загружаем друзей...';
+    }
+    setCommunityRefreshBusy(true);
+
+    try {
+      const leaderboardQuery = context.query(
+        context.collection(context.db, 'users'),
+        context.limit(500)
+      );
+      const leaderboardSnapshot = await context.getDocs(leaderboardQuery);
+      if (requestId !== communityLoadRequestId) return;
+
+      const leaderboardRows = leaderboardSnapshot.docs
+        .map((docSnap) => {
+          const data = docSnap.data() || {};
+          return {
+            uid: docSnap.id,
+            name: data.name || 'Пользователь',
+            totalXp: toInt(data.totalXp),
+            countryCode: data.countryCode || '',
+          };
+        })
+        .sort((a, b) => b.totalXp - a.totalXp)
+        .slice(0, 20);
+      renderLeaderboardRows(leaderboardRows, user.uid);
+    } catch (error) {
+      console.error('Leaderboard load failed:', error);
+      if (requestId !== communityLoadRequestId) return;
+      if (leaderboardMeta instanceof HTMLElement) {
+        leaderboardMeta.textContent = 'Не удалось загрузить лидерборд (проверь Firestore Rules).';
+      }
+      replaceListItems(leaderboardList, [createListItem('Доступ к рейтингу пока недоступен.', 'community-empty')]);
+    }
+
+    try {
+      const myRef = context.doc(context.db, 'users', user.uid);
+      const mySnapshot = await context.getDoc(myRef);
+      if (requestId !== communityLoadRequestId) return;
+      const myData = mySnapshot.exists() ? mySnapshot.data() : {};
+      const friendUids = Array.isArray(myData.friendUids)
+        ? myData.friendUids.filter((uid) => typeof uid === 'string' && uid.trim().length > 0)
+        : [];
+
+      let pendingCount = 0;
+      try {
+        const pendingQuery = context.query(
+          context.collection(context.db, 'friend_requests'),
+          context.where('toUid', '==', user.uid),
+          context.where('status', '==', 'pending'),
+          context.limit(50)
+        );
+        const pendingSnapshot = await context.getDocs(pendingQuery);
+        pendingCount = pendingSnapshot.size;
+      } catch (error) {
+        console.error('Friend requests load failed:', error);
+      }
+
+      if (!friendUids.length) {
+        renderFriendsRows([], pendingCount);
+      } else {
+        const uniqueFriendUids = Array.from(new Set(friendUids)).slice(0, 30);
+        const friendSnapshots = await Promise.all(
+          uniqueFriendUids.map((uid) => context.getDoc(context.doc(context.db, 'users', uid)))
+        );
+        if (requestId !== communityLoadRequestId) return;
+
+        const friendRows = friendSnapshots
+          .filter((snap) => snap.exists())
+          .map((snap) => {
+            const data = snap.data() || {};
+            return {
+              uid: snap.id,
+              name: data.name || 'Пользователь',
+              totalXp: toInt(data.totalXp),
+            };
+          })
+          .sort((a, b) => b.totalXp - a.totalXp);
+
+        renderFriendsRows(friendRows, pendingCount);
+      }
+    } catch (error) {
+      console.error('Friends load failed:', error);
+      if (requestId !== communityLoadRequestId) return;
+      if (friendsMeta instanceof HTMLElement) {
+        friendsMeta.textContent = 'Не удалось загрузить друзей (проверь Firestore Rules).';
+      }
+      replaceListItems(friendsList, [createListItem('Доступ к друзьям пока недоступен.', 'community-empty')]);
+      if (requestsMeta instanceof HTMLElement) {
+        requestsMeta.textContent = 'Заявок: —';
+      }
+    } finally {
+      if (requestId === communityLoadRequestId) {
+        setCommunityRefreshBusy(false);
+      }
+    }
+  };
 
   const resetAuthView = () => {
     setElementHidden(authUserCard, true);
@@ -349,6 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!user) {
             clearCachedProfile();
             resetAuthView();
+            renderCommunitySignedOut();
             setAuthStatus('');
             return;
           }
@@ -356,10 +576,12 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             const profile = await syncUserProfile(context, user);
             renderSignedInUser(profile);
+            loadCommunityData(context, user);
             setAuthStatus('');
           } catch (error) {
             console.error('User profile sync failed:', error);
             renderSignedInUser(buildProfileFromAuthUser(user));
+            loadCommunityData(context, user);
             setAuthStatus('Вы вошли, но синхронизация профиля с Firestore временно недоступна.', 'error');
           }
         });
@@ -446,6 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await firebaseContext.signOut(firebaseContext.auth);
         clearCachedProfile();
         resetAuthView();
+        renderCommunitySignedOut();
         setAuthStatus('Вы вышли из аккаунта.', 'info');
       } catch (error) {
         console.error('Sign-out failed:', error);
@@ -459,7 +682,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cachedProfile) {
     renderHeaderProfileState(cachedProfile);
   }
+  renderCommunitySignedOut();
   ensureFirebaseAuth({ showLoadError: false });
+
+  if (communityRefreshBtn instanceof HTMLButtonElement) {
+    communityRefreshBtn.addEventListener('click', async () => {
+      const firebaseContext = await ensureFirebaseAuth({ showLoadError: true });
+      if (!firebaseContext) return;
+      await loadCommunityData(firebaseContext, firebaseContext.auth.currentUser);
+    });
+  }
+
+  communityJumpButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.communityJump;
+      if (!target) return;
+      const card = document.querySelector(`[data-community-card="${target}"]`);
+      if (!(card instanceof HTMLElement)) return;
+      const top = card.getBoundingClientRect().top + window.scrollY - getAnchorOffset();
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    });
+  });
 
   if (googleLoginBtn instanceof HTMLAnchorElement) {
     googleLoginBtn.addEventListener('click', async (event) => {
@@ -483,10 +726,12 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             const profile = await syncUserProfile(firebaseContext, signedInUser);
             renderSignedInUser(profile);
+            loadCommunityData(firebaseContext, signedInUser);
             setAuthStatus('');
           } catch (profileError) {
             console.error('User profile sync failed right after sign-in:', profileError);
             renderSignedInUser(buildProfileFromAuthUser(signedInUser));
+            loadCommunityData(firebaseContext, signedInUser);
             setAuthStatus('Вы вошли, но синхронизация профиля с Firestore временно недоступна.', 'error');
           }
         }
