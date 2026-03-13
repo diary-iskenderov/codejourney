@@ -266,8 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             const profile = await syncUserProfile(context, user);
             renderSignedInUser(profile);
-            const identity = user.displayName || user.email || 'Google аккаунт';
-            setAuthStatus(`Вы вошли как ${identity}.`, 'success');
+            setAuthStatus('');
           } catch (error) {
             console.error('User profile sync failed:', error);
             resetAuthView();
@@ -308,7 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
     activeModal = modal;
     activeModalTrigger = trigger;
 
-    const focusTarget = modal.querySelector('.google-login-btn, [data-modal-close]');
+    const focusTarget =
+      modal.querySelector('.google-login-btn:not([hidden]), .auth-signout-btn:not([hidden])') ||
+      modal.querySelector('.auth-modal__close');
     if (focusTarget instanceof HTMLElement) {
       focusTarget.focus();
     }
@@ -327,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openModal(modal, trigger);
       setAuthStatus('Подключаем Firebase...', 'info');
       ensureFirebaseAuth({ showLoadError: true }).then((context) => {
-        if (context && !(authStatus instanceof HTMLElement && authStatus.dataset.state === 'success')) {
+        if (context) {
           setAuthStatus('');
         }
       });
@@ -385,8 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (signedInUser) {
           const profile = await syncUserProfile(firebaseContext, signedInUser);
           renderSignedInUser(profile);
-          const identity = signedInUser.displayName || signedInUser.email || 'Google аккаунт';
-          setAuthStatus(`Вы вошли как ${identity}.`, 'success');
+          setAuthStatus('');
         }
       } catch (error) {
         const code =
