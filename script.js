@@ -17,16 +17,23 @@ const getFirebaseContext = async () => {
     firebaseContextPromise = Promise.all([
       import('https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js'),
       import('https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js'),
-    ]).then(([appModule, authModule]) => {
+      import('https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js'),
+    ]).then(([appModule, authModule, firestoreModule]) => {
       const firebaseApp = appModule.initializeApp(firebaseConfig);
       const auth = authModule.getAuth(firebaseApp);
+      const db = firestoreModule.getFirestore(firebaseApp);
       const provider = new authModule.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
 
       return {
         auth,
+        db,
         provider,
+        doc: firestoreModule.doc,
+        getDoc: firestoreModule.getDoc,
         onAuthStateChanged: authModule.onAuthStateChanged,
+        serverTimestamp: firestoreModule.serverTimestamp,
+        setDoc: firestoreModule.setDoc,
         signInWithPopup: authModule.signInWithPopup,
       };
     });
@@ -107,19 +114,49 @@ document.addEventListener('DOMContentLoaded', () => {
     googleLoginBtn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
   };
 
+  const syncUserProfile = async (context, user) => {
+    const userRef = context.doc(context.db, 'users', user.uid);
+    const existingUser = await context.getDoc(userRef);
+
+    const profilePayload = {
+      name: user.displayName || user.email?.split('@')[0] || 'CodeJourney User',
+      email: user.email || '',
+      photoUrl: user.photoURL || '',
+      updatedAt: context.serverTimestamp(),
+    };
+
+    if (!existingUser.exists()) {
+      await context.setDoc(userRef, {
+        ...profilePayload,
+        plan: 'free',
+        role: 'user',
+        createdAt: context.serverTimestamp(),
+      });
+      return;
+    }
+
+    await context.setDoc(userRef, profilePayload, { merge: true });
+  };
+
   const ensureFirebaseAuth = async ({ showLoadError = false } = {}) => {
     try {
       const context = await getFirebaseContext();
 
       if (!authObserverInitialized) {
-        context.onAuthStateChanged(context.auth, (user) => {
+        context.onAuthStateChanged(context.auth, async (user) => {
           if (!user) {
             setAuthStatus('');
             return;
           }
 
-          const identity = user.displayName || user.email || 'Google аккаунт';
-          setAuthStatus(`Вы вошли как ${identity}.`, 'success');
+          try {
+            await syncUserProfile(context, user);
+            const identity = user.displayName || user.email || 'Google аккаунт';
+            setAuthStatus(`Вы вошли как ${identity}.`, 'success');
+          } catch (error) {
+            console.error('User profile sync failed:', error);
+            setAuthStatus('Вход выполнен, но профиль не сохранился в Firestore.', 'error');
+          }
         });
         authObserverInitialized = true;
       }
