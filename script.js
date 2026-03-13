@@ -1,7 +1,7 @@
 document.documentElement.classList.add('js-ready');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCr5qnIxLVdYR3F8LdeU-dItqFo-O5yFTQ',
+  apiKey: 'AIzaSyCGAssPC67mYZoKTHgopTDPRqR3WwnIp4M',
   authDomain: 'iskenderov-pro.firebaseapp.com',
   projectId: 'iskenderov-pro',
   storageBucket: 'iskenderov-pro.firebasestorage.app',
