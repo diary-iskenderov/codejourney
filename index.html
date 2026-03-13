@@ -156,10 +156,14 @@ Get job-ready skills</code></pre>
           </article>
 
           <aside class="checklist-card" aria-label="Чеклист старта">
-            <h3>Подготовка перед стартом</h3>
+            <h3>Необязательный чеклист подготовки</h3>
             <p>
               Отмечай только те шаги, которые уже сделал. Этот чеклист нужен,
               чтобы понять, готов ли ты переходить к первому курсу.
+            </p>
+            <p class="checklist-note">
+              Важно: отметки не влияют на доступ к курсам и аккаунт. Это личный план,
+              который помогает не пропустить базовые шаги перед стартом.
             </p>
             <label class="check-item">
               <input class="learning-check" type="checkbox" data-key="goal" />
@@ -178,9 +182,10 @@ Get job-ready skills</code></pre>
               <span>Начал первый мини-проект</span>
             </label>
             <p class="progress-copy">
-              <strong id="checklist-count">0</strong> / 4 шага завершено. Когда закроешь основные
-              пункты, переходи к выбору курса ниже.
+              <strong id="checklist-count">0</strong> / 4 шага отмечено.
+              <span id="checklist-next-step">Можно сразу переходить к выбору курса ниже.</span>
             </p>
+            <a class="btn btn-light checklist-cta" href="#courses">Перейти к выбору курса</a>
           </aside>
         </div>
       </section>
@@ -454,7 +459,7 @@ Get job-ready skills</code></pre>
         <span class="material-symbols-rounded">school</span>
         <span>Курсы</span>
       </a>
-      <a href="#faq">
+      <a href="#faq" target="_blank" rel="noopener noreferrer">
         <span class="material-symbols-rounded">help</span>
         <span>FAQ</span>
       </a>

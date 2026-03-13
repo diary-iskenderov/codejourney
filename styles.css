@@ -622,6 +622,22 @@ main {
   border-top: 1px dashed rgba(150, 173, 208, 0.38);
 }
 
+.checklist-note {
+  margin-top: 10px !important;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(116, 222, 254, 0.2);
+  background: rgba(11, 21, 40, 0.75);
+  color: #c8ddff !important;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.checklist-cta {
+  margin-top: 12px;
+  width: 100%;
+}
+
 .search-wrap {
   margin-top: 16px;
   display: grid;

@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inPageLinks = Array.from(document.querySelectorAll('a[href^="#"]'));
   inPageLinks.forEach((link) => {
     link.addEventListener('click', (event) => {
-      if (link.dataset.modalTarget) return;
+      if (link.dataset.modalTarget || link.target === '_blank') return;
 
       const href = link.getAttribute('href');
       if (!href || href === '#') return;
