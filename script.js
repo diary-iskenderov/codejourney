@@ -1,13 +1,13 @@
 document.documentElement.classList.add('js-ready');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyAIOhQThmPnSl-YcfXqLlVm-Q66Dp_ES4c',
-  authDomain: 'codejourney-app.firebaseapp.com',
-  projectId: 'codejourney-app',
-  storageBucket: 'codejourney-app.firebasestorage.app',
-  messagingSenderId: '30574550222',
-  appId: '1:30574550222:web:b32e2e7893932ec55c449f',
-  measurementId: 'G-HJFMHNYGXV',
+  apiKey: 'AIzaSyCr5qnIxLVdYR3F8LdeU-dItqFo-O5yFTQ',
+  authDomain: 'iskenderov-pro.firebaseapp.com',
+  projectId: 'iskenderov-pro',
+  storageBucket: 'iskenderov-pro.firebasestorage.app',
+  messagingSenderId: '909778828185',
+  appId: '1:909778828185:web:7f3a1c877246a747af7108',
+  measurementId: 'G-0Y485H5TBL',
 };
 
 let firebaseContextPromise = null;
@@ -296,8 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!(leaderboardMeta instanceof HTMLElement)) return;
 
     if (!rows.length) {
-      leaderboardMeta.textContent = 'Пока нет пользователей в рейтинге.';
-      replaceListItems(leaderboardList, [createListItem('Добавьте первый профиль через Google вход.', 'community-empty')]);
+      leaderboardMeta.textContent =
+        'В этой базе пока нет пользователей. Если в приложении пользователи есть, сайт подключён к другому Firebase-проекту.';
+      replaceListItems(leaderboardList, [createListItem('Список пока пуст.', 'community-empty')]);
       return;
     }
 
@@ -387,10 +388,38 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Leaderboard load failed:', error);
       if (requestId !== communityLoadRequestId) return;
-      if (leaderboardMeta instanceof HTMLElement) {
-        leaderboardMeta.textContent = 'Не удалось загрузить лидерборд (проверь Firestore Rules).';
+      const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
+      const ownSnapshot = await context.getDoc(context.doc(context.db, 'users', user.uid));
+      if (requestId !== communityLoadRequestId) return;
+
+      if (ownSnapshot.exists()) {
+        const ownData = ownSnapshot.data() || {};
+        renderLeaderboardRows(
+          [
+            {
+              uid: user.uid,
+              name: ownData.name || user.displayName || 'Вы',
+              totalXp: toInt(ownData.totalXp),
+              countryCode: ownData.countryCode || '',
+            },
+          ],
+          user.uid
+        );
+        if (leaderboardMeta instanceof HTMLElement) {
+          leaderboardMeta.textContent =
+            code === 'permission-denied'
+              ? 'Показан только ваш профиль. Для общего рейтинга нужно открыть чтение users для signed-in в Firestore Rules.'
+              : 'Показан только ваш профиль. Общий рейтинг временно недоступен.';
+        }
+      } else {
+        if (leaderboardMeta instanceof HTMLElement) {
+          leaderboardMeta.textContent =
+            code === 'permission-denied'
+              ? 'Нет доступа к общему рейтингу (Firestore Rules).'
+              : 'Не удалось загрузить лидерборд.';
+        }
+        replaceListItems(leaderboardList, [createListItem('Доступ к рейтингу пока недоступен.', 'community-empty')]);
       }
-      replaceListItems(leaderboardList, [createListItem('Доступ к рейтингу пока недоступен.', 'community-empty')]);
     }
 
     try {
