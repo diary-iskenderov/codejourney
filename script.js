@@ -115,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const authSignoutBtn = document.querySelector('[data-auth-signout]');
   const authTitle = document.getElementById('profile-modal-title');
   const authCopy = document.querySelector('.auth-modal__copy');
+  const headerProfileBtn = document.querySelector('[data-header-profile-btn]');
+  const headerProfileLabel = document.querySelector('[data-header-profile-label]');
   let activeModal = null;
   let activeModalTrigger = null;
   let authObserverInitialized = false;
@@ -141,16 +143,47 @@ document.addEventListener('DOMContentLoaded', () => {
     googleLoginBtn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
   };
 
+  const setElementHidden = (element, isHidden) => {
+    if (!(element instanceof HTMLElement)) return;
+    element.hidden = isHidden;
+    element.style.display = isHidden ? 'none' : '';
+  };
+
+  const getDisplayName = (profile = {}) => {
+    const fromName = String(profile.name || '').trim();
+    if (fromName) {
+      return fromName.split(/\s+/)[0];
+    }
+    const fromEmail = String(profile.email || '').trim();
+    if (fromEmail && fromEmail.includes('@')) {
+      return fromEmail.split('@')[0];
+    }
+    return 'ПРОФИЛЬ';
+  };
+
+  const renderHeaderProfileState = (profile = null) => {
+    if (!(headerProfileLabel instanceof HTMLElement)) return;
+
+    if (!profile) {
+      headerProfileLabel.textContent = 'ПРОФИЛЬ';
+      if (headerProfileBtn instanceof HTMLElement) {
+        headerProfileBtn.setAttribute('aria-label', 'Профиль');
+      }
+      return;
+    }
+
+    const shortName = getDisplayName(profile);
+    headerProfileLabel.textContent = shortName;
+    if (headerProfileBtn instanceof HTMLElement) {
+      headerProfileBtn.setAttribute('aria-label', `Профиль: ${shortName}`);
+    }
+  };
+
   const resetAuthView = () => {
-    if (authUserCard instanceof HTMLElement) {
-      authUserCard.hidden = true;
-    }
-    if (googleLoginBtn instanceof HTMLElement) {
-      googleLoginBtn.hidden = false;
-    }
-    if (authSignoutBtn instanceof HTMLElement) {
-      authSignoutBtn.hidden = true;
-    }
+    setElementHidden(authUserCard, true);
+    setElementHidden(googleLoginBtn, false);
+    setElementHidden(authSignoutBtn, true);
+    renderHeaderProfileState(null);
     if (authTitle instanceof HTMLElement) {
       authTitle.textContent = 'Вход в аккаунт';
     }
@@ -169,15 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const renderSignedInUser = (profile) => {
-    if (authUserCard instanceof HTMLElement) {
-      authUserCard.hidden = false;
-    }
-    if (googleLoginBtn instanceof HTMLElement) {
-      googleLoginBtn.hidden = true;
-    }
-    if (authSignoutBtn instanceof HTMLElement) {
-      authSignoutBtn.hidden = false;
-    }
+    setElementHidden(authUserCard, false);
+    setElementHidden(googleLoginBtn, true);
+    setElementHidden(authSignoutBtn, false);
+    renderHeaderProfileState(profile);
     if (authTitle instanceof HTMLElement) {
       authTitle.textContent = 'Ваш профиль';
     }
