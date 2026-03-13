@@ -18,12 +18,18 @@ const getFirebaseContext = async () => {
       import('https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js'),
       import('https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js'),
       import('https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js'),
-    ]).then(([appModule, authModule, firestoreModule]) => {
+    ]).then(async ([appModule, authModule, firestoreModule]) => {
       const firebaseApp = appModule.initializeApp(firebaseConfig);
       const auth = authModule.getAuth(firebaseApp);
       const db = firestoreModule.getFirestore(firebaseApp);
       const provider = new authModule.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
+
+      try {
+        await authModule.setPersistence(auth, authModule.browserLocalPersistence);
+      } catch (error) {
+        console.warn('Failed to set browserLocalPersistence:', error);
+      }
 
       return {
         auth,
@@ -179,6 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const buildProfileFromAuthUser = (user) => ({
+    name: user.displayName || user.email?.split('@')[0] || 'CodeJourney User',
+    email: user.email || '',
+    photoUrl: user.photoURL || '',
+    plan: 'free',
+    role: 'user',
+  });
+
   const resetAuthView = () => {
     setElementHidden(authUserCard, true);
     setElementHidden(googleLoginBtn, false);
@@ -297,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setAuthStatus('');
           } catch (error) {
             console.error('User profile sync failed:', error);
-            resetAuthView();
-            setAuthStatus('Вход выполнен, но профиль не сохранился в Firestore.', 'error');
+            renderSignedInUser(buildProfileFromAuthUser(user));
+            setAuthStatus('Вы вошли, но синхронизация профиля с Firestore временно недоступна.', 'error');
           }
         });
         authObserverInitialized = true;
@@ -392,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   resetAuthView();
+  ensureFirebaseAuth({ showLoadError: false });
 
   if (googleLoginBtn instanceof HTMLAnchorElement) {
     googleLoginBtn.addEventListener('click', async (event) => {
@@ -412,9 +427,15 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         const signedInUser = signInResult && signInResult.user ? signInResult.user : null;
         if (signedInUser) {
-          const profile = await syncUserProfile(firebaseContext, signedInUser);
-          renderSignedInUser(profile);
-          setAuthStatus('');
+          try {
+            const profile = await syncUserProfile(firebaseContext, signedInUser);
+            renderSignedInUser(profile);
+            setAuthStatus('');
+          } catch (profileError) {
+            console.error('User profile sync failed right after sign-in:', profileError);
+            renderSignedInUser(buildProfileFromAuthUser(signedInUser));
+            setAuthStatus('Вы вошли, но синхронизация профиля с Firestore временно недоступна.', 'error');
+          }
         }
       } catch (error) {
         const code =
