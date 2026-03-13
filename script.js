@@ -80,9 +80,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   if (window.location.hash) {
-    window.requestAnimationFrame(() => {
-      scrollToAnchor(window.location.hash, 'auto');
-    });
+    const navigationEntries =
+      typeof performance !== 'undefined' && performance.getEntriesByType
+        ? performance.getEntriesByType('navigation')
+        : [];
+    const navigationType =
+      navigationEntries.length > 0 && navigationEntries[0] && 'type' in navigationEntries[0]
+        ? navigationEntries[0].type
+        : '';
+
+    // On hard refresh keep landing at top instead of jumping to previous hash section.
+    if (navigationType === 'reload') {
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    if (window.location.hash) {
+      window.requestAnimationFrame(() => {
+        scrollToAnchor(window.location.hash, 'auto');
+      });
+    }
   }
 
   const modalTriggers = Array.from(document.querySelectorAll('[data-modal-target]'));
@@ -360,7 +377,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        await firebaseContext.signInWithPopup(firebaseContext.auth, firebaseContext.provider);
+        const signInResult = await firebaseContext.signInWithPopup(
+          firebaseContext.auth,
+          firebaseContext.provider
+        );
+        const signedInUser = signInResult && signInResult.user ? signInResult.user : null;
+        if (signedInUser) {
+          const profile = await syncUserProfile(firebaseContext, signedInUser);
+          renderSignedInUser(profile);
+          const identity = signedInUser.displayName || signedInUser.email || 'Google аккаунт';
+          setAuthStatus(`Вы вошли как ${identity}.`, 'success');
+        }
       } catch (error) {
         const code =
           error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
@@ -471,12 +498,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const checks = Array.from(document.querySelectorAll('.learning-check'));
   const checklistCount = document.getElementById('checklist-count');
+  const checklistNextStep = document.getElementById('checklist-next-step');
   const checklistStorageKey = 'cj-learning-checks-v1';
 
   const updateChecklistCount = () => {
     const completed = checks.filter((item) => item.checked).length;
     if (checklistCount) {
       checklistCount.textContent = String(completed);
+    }
+
+    if (checklistNextStep) {
+      if (completed >= checks.length && checks.length > 0) {
+        checklistNextStep.textContent = 'Готово! Переходи к выбору курса ниже.';
+      } else if (completed > 0) {
+        checklistNextStep.textContent =
+          'Хорошо идешь. Закрой оставшиеся пункты или сразу переходи к курсам ниже.';
+      } else {
+        checklistNextStep.textContent = 'Можно сразу переходить к выбору курса ниже.';
+      }
     }
   };
 
